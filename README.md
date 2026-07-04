@@ -79,20 +79,22 @@ data/
   docs/            15 fictional Cloudbox help-center articles (Markdown)
   tickets.jsonl    60 synthetic past resolved tickets (retrieval augmentation)
   eval_set.jsonl   100 eval questions with should_deflect labels
-app/               Core library: config, ingestion, retrieval, generation,
-                   confidence scoring, pipeline orchestration, prompts, judge
-eval/              Eval harness: experiment config, metrics, runner, A/B
-                   compare, regression gate, report — see "Eval harness" below
+app/               Production library (no eval dependency): config, ingestion,
+                   retrieval, generation, confidence scoring, pipeline, prompts
+evals/             Dev-only consumer of the eval harness (see "Eval harness"):
+  adapter.py       Wraps the pipeline to satisfy the harness's Agent protocol
+  scoring.py       Task-specific metrics, gate tolerances, safety rule
+  harness.py       Wires the agent + scoring into agent-eval-kit
 api/main.py        FastAPI service exposing POST /tickets/resolve
 scripts/
   ingest.py             Build the vector index from data/
   run_eval.py           Quick single-run eval (routing metrics only)
   run_experiment.py     Run one named config through the harness (with judge)
   compare_runs.py       Diff two runs: metric deltas + per-item flips
-  eval_gate.py          Regression gate: exit non-zero on a metric drop
-  run_ab_demo.py        End-to-end A/B: naive v1 vs tuned v2, report + gate
+  eval_gate.py          Regression gate: exit non-zero on a regression
+  run_ab_demo.py        End-to-end A/B: production vs a change, report + gate
   generate_showcase.py  Regenerate the curated Q&A examples used on the demo site
-tests/             Unit tests (confidence, ingestion, eval metrics/gate) — no API calls
+tests/             Unit tests (confidence, ingestion, scoring) — no API calls
 docs/              Static demo site (GitHub Pages) — see "Demo site" below
 ```
 
@@ -100,7 +102,9 @@ docs/              Static demo site (GitHub Pages) — see "Demo site" below
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt        # production only
+# For eval work, also install the harness (a separate library, from git):
+pip install -r requirements-dev.txt
 cp .env.example .env   # then fill in ANTHROPIC_API_KEY
 ```
 
@@ -147,24 +151,43 @@ a missed deflection). Per-item results and full model output are written to
 
 ## Eval harness
 
-The `eval/` package turns the one-shot eval script into a reusable
-regression-testing harness — the piece that lets you answer "did this
-prompt/model change make the agent better or worse?" instead of guessing.
-See the [live eval page](https://aleksa0ku.github.io/support-ticket-rag-agent/eval.html).
+The eval + regression-testing harness — the piece that lets you answer "did
+this prompt/model change make the agent better or worse?" instead of
+guessing — lives in a **separate, reusable library**:
+[**agent-eval-kit**](https://github.com/aleksa0ku/agent-eval-kit). This repo
+consumes it. See the
+[live eval page](https://aleksa0ku.github.io/support-ticket-rag-agent/eval.html).
 
-What it adds on top of `run_eval.py`:
+**Why two repos.** The harness is generic (an LLM-as-judge, A/B compare, and a
+regression gate that treat metrics as opaque dicts), so it's reused across
+projects rather than copied. The dependency direction is one-way and dev-only:
 
-- **LLM-as-judge (reference-free).** `app/judge.py` grades each answer against
-  the retrieved context on faithfulness, helpfulness, and safety (1–5 each) —
-  catching hallucinations and over-answering that the label-based metrics
-  can't see. Uses `JUDGE_MODEL` (`claude-haiku-4-5` by default).
-- **Experiment tracking.** Each run is a named, fingerprinted config
-  (model + prompt variant + threshold) saved to `eval_results/<run_id>.json`.
-- **A/B compare.** Diff any two runs: per-metric deltas plus the exact list
-  of tickets whose routing decision flipped (regressions vs improvements).
-- **Regression gate.** Baseline vs candidate, exit non-zero if any tracked
-  metric drops past tolerance — run on-demand or from a manually-triggered
-  CI job (real API calls, so not on every commit).
+```
+support-ticket-rag-agent  ──depends on (dev)──▶  agent-eval-kit
+  app/  (production, never imports the kit)         Agent protocol · Judge
+  evals/ (adapter + scoring + config) ─────────▶    run_experiment · compare
+  requirements-dev.txt: git+…/agent-eval-kit        check_gate · report
+```
+
+Production (`app/`, `api/`) never imports the kit, so the agent runs
+standalone. The kit knows nothing about Cloudbox — this repo provides a
+~15-line adapter (`evals/adapter.py`) plus the task-specific scoring, metrics,
+tolerances, and safety rule (`evals/scoring.py`). Reuse the kit in the next
+project by writing a new adapter.
+
+What the harness gives you:
+
+- **LLM-as-judge (reference-free).** Grades each answer against the retrieved
+  context on faithfulness, helpfulness, and safety (1–5 each) — catching
+  hallucinations and over-answering the label metrics can't see. Uses
+  `JUDGE_MODEL` (`claude-haiku-4-5` by default).
+- **Experiment tracking.** Each run is a named, fingerprinted config saved to
+  `eval_results/<run_id>.json`.
+- **A/B compare.** Diff any two runs: per-metric deltas plus the exact tickets
+  whose decision flipped.
+- **Regression gate.** Metric tolerances **plus** a zero-tolerance safety rule
+  (no safety-critical ticket may be auto-resolved when it should escalate).
+  Run on-demand or from a manually-triggered CI job.
 
 ```bash
 # Run the production-vs-aggressive regression demo end-to-end (with the judge),

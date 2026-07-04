@@ -1,0 +1,5 @@
+# Dev/test-only dependencies. The eval harness lives in a separate, reusable
+# library and is installed from git — production code never imports it.
+-r requirements.txt
+pytest>=8.3.0
+agent-eval-kit @ git+https://github.com/aleksa0ku/agent-eval-kit

@@ -14,3 +14,6 @@ build/
 .ruff_cache/
 eval_results/
 *.log
+
+# reference asset dropped in for design work, not project content
+catalystbehavioral.com_.png
