@@ -75,16 +75,16 @@
   }
   .top-links a:hover { color: var(--text); }
 
-  .hero { padding: 72px 0 48px; }
+  .hero { padding: 72px 0 48px; text-align: center; }
   .eyebrow {
     display: inline-block; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em;
     text-transform: uppercase; color: var(--accent-text); background: var(--accent-soft);
     padding: 5px 12px; border-radius: 999px; margin-bottom: 20px;
   }
   h1 { font-size: clamp(32px, 5vw, 48px); line-height: 1.12; margin: 0 0 18px; letter-spacing: -0.02em; }
-  .lede { font-size: 19px; color: var(--text-muted); max-width: 620px; margin: 0 0 28px; }
-  .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
-  .problem-chips { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 22px; }
+  .lede { font-size: 19px; color: var(--text-muted); max-width: 560px; margin: 0 auto 28px; }
+  .cta-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .problem-chips { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 22px; justify-content: center; }
   .chip {
     display: inline-flex; align-items: center; gap: 9px; background: var(--bg-alt);
     border: 1px solid var(--border); border-radius: 999px; padding: 6px 16px 6px 6px;
@@ -114,12 +114,12 @@
   .stat .n { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
   .stat .l { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
 
-  section { padding: 56px 0; border-top: 1px solid var(--border); }
+  section { padding: 56px 0; border-top: 1px solid var(--border); text-align: center; }
   h2 { font-size: 26px; margin: 0 0 8px; letter-spacing: -0.01em; }
-  .section-sub { color: var(--text-muted); margin: 0 0 32px; max-width: 640px; }
+  .section-sub { color: var(--text-muted); margin: 0 auto 32px; max-width: 560px; }
 
   .flow {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; text-align: center;
   }
   @media (max-width: 760px) { .flow { grid-template-columns: 1fr 1fr; } }
   .flow-step {
@@ -128,13 +128,13 @@
   }
   .flow-step .num {
     width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text);
-    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; margin: 0 auto 10px;
   }
   .flow-step h3 { font-size: 14.5px; margin: 0 0 6px; }
   .flow-step p { font-size: 13px; color: var(--text-muted); margin: 0; }
 
   .metric-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; text-align: center;
   }
   .metric-card {
     background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px;
@@ -142,9 +142,9 @@
   }
   .metric-card .big { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; }
   .metric-card .label { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
-  .metric-card .sub { font-size: 12px; color: var(--text-muted); margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px; }
+  .metric-card .sub { font-size: 12px; color: var(--text-muted); margin-top: 10px; }
 
-  .example-list { display: flex; flex-direction: column; gap: 10px; }
+  .example-list { display: flex; flex-direction: column; gap: 10px; text-align: left; }
   .example {
     background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px;
     box-shadow: var(--card-shadow); overflow: hidden;
@@ -179,15 +179,15 @@
     padding: 10px 14px; font-size: 13px; margin-bottom: 12px;
   }
 
-  .stack-list { display: flex; flex-wrap: wrap; gap: 10px; }
+  .stack-list { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
   .stack-chip {
     background: var(--bg-alt); border: 1px solid var(--border); border-radius: 999px;
     padding: 7px 14px; font-size: 13px;
   }
 
-  footer { padding: 40px 0 60px; color: var(--text-muted); font-size: 13px; }
+  footer { padding: 40px 0 60px; color: var(--text-muted); font-size: 13px; text-align: center; }
   footer a { color: var(--text-muted); text-decoration: underline; }
-  .footnote { max-width: 640px; }
+  .footnote { max-width: 560px; margin: 0 auto; }
 
   .theme-toggle {
     background: transparent; border: 1px solid var(--border); border-radius: 8px;
@@ -217,9 +217,8 @@
       <div class="chip"><span class="chip-num">$5–15</span><span class="chip-label">in agent time, per ticket</span></div>
     </div>
     <p class="lede">
-      This agent retrieves from the help center and past tickets, drafts an answer with an
-      LLM, and only auto-resolves when it's actually confident — otherwise it escalates
-      to a human with the draft attached.
+      Retrieves from your help center and past tickets, drafts an answer, and escalates to
+      a human whenever it's not confident.
     </p>
     <div class="cta-row">
       <a class="btn btn-primary" href="#demo">See it answer real tickets</a>
@@ -238,27 +237,27 @@
 <div class="wrap">
   <section>
     <h2>How it works</h2>
-    <p class="section-sub">Every ticket goes through the same four steps — no human in the loop unless the confidence check fails.</p>
+    <p class="section-sub">No human in the loop unless the confidence check fails.</p>
     <div class="flow">
       <div class="flow-step">
         <div class="num">1</div>
         <h3>Retrieve</h3>
-        <p>Embed the question and pull the top-k most similar help-center sections and past resolved tickets from a vector store.</p>
+        <p>Find the most similar help docs and past tickets.</p>
       </div>
       <div class="flow-step">
         <div class="num">2</div>
         <h3>Draft</h3>
-        <p>Claude answers strictly from the retrieved context via a forced structured tool call — never from its own general knowledge.</p>
+        <p>Answer strictly from that context — never a guess.</p>
       </div>
       <div class="flow-step">
         <div class="num">3</div>
         <h3>Score confidence</h3>
-        <p>Blend the model's self-reported confidence with how strong the retrieval match actually was.</p>
+        <p>Blend the model's confidence with retrieval strength.</p>
       </div>
       <div class="flow-step">
         <div class="num">4</div>
         <h3>Decide</h3>
-        <p>Above threshold → send the answer. Below threshold, or the model itself flags it → escalate to a human with the draft.</p>
+        <p>Confident → send it. Unsure → escalate with the draft.</p>
       </div>
     </div>
   </section>
@@ -268,46 +267,39 @@
   <section id="metrics">
     <h2>Measured on a 100-question eval set</h2>
     <p class="section-sub">
-      75 questions answerable straight from the docs, and 25 designed to be escalated —
-      security incidents, billing disputes, legal/compliance requests, a prompt-injection
-      attempt, and out-of-scope asks — to test that the agent knows what it can't resolve,
-      not just what it can.
+      75 answerable straight from the docs, 25 that should escalate — security, billing,
+      legal, and a prompt-injection attempt.
     </p>
     <div class="metric-grid">
       <div class="metric-card">
         <div class="big">67%</div>
-        <div class="label">Tickets closed with zero human involvement</div>
-        <div class="sub">67 of 100 test tickets — the agent handled start to finish, no handoff</div>
+        <div class="label">Tickets closed, zero handoff</div>
+        <div class="sub">67 of 100</div>
       </div>
       <div class="metric-card">
         <div class="big">$5.34</div>
-        <div class="label">Saved per ticket, on average</div>
-        <div class="sub">$8.00 assumed cost if a human handled every ticket, minus the agent's real
-          per-ticket cost (its own API cost, plus the flat $8 on the ~33% it still escalates) —
-          works out to $2.66/ticket, a 67% cut</div>
+        <div class="label">Saved per ticket</div>
+        <div class="sub">$8 human cost → $2.66 with the agent</div>
       </div>
       <div class="metric-card">
         <div class="big">98.5%</div>
-        <div class="label">Accuracy of what it auto-resolved</div>
-        <div class="sub">Of the 67 tickets it chose to answer itself, 66 were correct — only 1 wrong
-          answer reached a customer unsupervised</div>
+        <div class="label">Accuracy when auto-resolved</div>
+        <div class="sub">66 of 67 answers correct</div>
       </div>
       <div class="metric-card">
         <div class="big">88%</div>
-        <div class="label">Share of the safe-to-answer tickets it caught</div>
-        <div class="sub">Of tickets it could have safely auto-resolved, it caught 88% — the rest went
-          to a human unnecessarily, which is safe but a missed efficiency gain</div>
+        <div class="label">Safe-to-answer catch rate</div>
+        <div class="sub">Rest escalated unnecessarily, still safe</div>
       </div>
       <div class="metric-card">
         <div class="big">100%</div>
-        <div class="label">Answers backed by the right source</div>
-        <div class="sub">Every one of the 66 correct auto-resolutions cited the actual right
-          help-center article — not a guess, not a hallucinated source</div>
+        <div class="label">Correctly sourced</div>
+        <div class="sub">Every answer cited the right doc</div>
       </div>
       <div class="metric-card">
         <div class="big">6.7s</div>
-        <div class="label">Time to first response</div>
-        <div class="sub">vs. an assumed 4-hour human first-response time</div>
+        <div class="label">First response time</div>
+        <div class="sub">vs. ~4h for a human</div>
       </div>
     </div>
   </section>
@@ -316,10 +308,7 @@
 <div class="wrap">
   <section id="demo">
     <h2>Real answers from the running agent</h2>
-    <p class="section-sub">
-      These are unedited outputs — question in, retrieval + Claude out — captured directly
-      from the pipeline in this repo. Click a question to expand the full answer.
-    </p>
+    <p class="section-sub">Unedited output, captured live from the pipeline. Click to expand.</p>
     <div class="example-list" id="example-list"></div>
   </section>
 </div>
@@ -340,11 +329,8 @@
 <div class="wrap">
   <footer>
     <p class="footnote">
-      Built around a fictional SaaS product ("Cloudbox") with a synthetic help center,
-      past-ticket dataset, and eval set — so the whole pipeline runs and is gradeable
-      end-to-end without any real customer data. Swap in a real help-center export and
-      ticket history to point this at an actual support queue. Full source, data, and the
-      eval harness are on
+      Built on a fictional product ("Cloudbox") so the whole pipeline runs end-to-end.
+      Swap in your own docs and tickets to point it at a real support queue. Source on
       <a href="https://github.com/aleksa0ku/support-ticket-rag-agent" target="_blank" rel="noopener">GitHub</a>.
     </p>
   </footer>
