@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eval Harness — Support Deflection Agent</title>
+<meta name="description" content="A reusable eval + regression-testing harness: LLM-as-judge, golden dataset, A/B of prompts, and a pass/fail gate that catches regressions before deploy.">
+<style>
+  :root {
+    --bg: #ffffff; --bg-alt: #ffffff; --text: #1a1d23; --text-muted: #5b6270;
+    --border: #e3e2de; --accent: #0f7a6b; --accent-soft: #e3f3f0; --accent-text: #0a5a4e;
+    --escalate: #b8560f; --escalate-soft: #fdf1e6; --escalate-text: #8a4109;
+    --panel: #f2f1ed; --code-bg: #f0efec;
+    --up: #0f7a6b; --up-soft: #e3f3f0; --down: #b8560f; --down-soft: #fdf1e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111110; --bg-alt: #1a1e25; --text: #f1f1ee; --text-muted: #9a988f;
+      --border: #2c2c29; --accent: #3ecdb4; --accent-soft: #163b35; --accent-text: #6fe3cf;
+      --escalate: #f0985a; --escalate-soft: #3a2718; --escalate-text: #f5b27e;
+      --panel: #1c1c19; --code-bg: #10141a;
+      --up: #3ecdb4; --up-soft: #163b35; --down: #f0985a; --down-soft: #3a2718;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111110; --bg-alt: #1a1e25; --text: #f1f1ee; --text-muted: #9a988f;
+    --border: #2c2c29; --accent: #3ecdb4; --accent-soft: #163b35; --accent-text: #6fe3cf;
+    --escalate: #f0985a; --escalate-soft: #3a2718; --escalate-text: #f5b27e;
+    --panel: #1c1c19; --code-bg: #10141a;
+    --up: #3ecdb4; --up-soft: #163b35; --down: #f0985a; --down-soft: #3a2718;
+  }
+  :root[data-theme="light"] {
+    --bg: #ffffff; --bg-alt: #ffffff; --text: #1a1d23; --text-muted: #5b6270;
+    --border: #e3e2de; --accent: #0f7a6b; --accent-soft: #e3f3f0; --accent-text: #0a5a4e;
+    --escalate: #b8560f; --escalate-soft: #fdf1e6; --escalate-text: #8a4109;
+    --panel: #f2f1ed; --code-bg: #f0efec;
+    --up: #0f7a6b; --up-soft: #e3f3f0; --down: #b8560f; --down-soft: #fdf1e6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; }
+
+  header.top { padding: 18px 0; border-bottom: 1px solid var(--border); }
+  header.top .wrap { display: flex; align-items: center; justify-content: space-between; }
+  .brand { font-weight: 700; font-size: 15px; }
+  .brand span { color: var(--text-muted); font-weight: 500; }
+  .top-links a { text-decoration: none; font-size: 14px; color: var(--text-muted); margin-left: 20px; font-weight: 500; }
+  .top-links a:hover { color: var(--text); }
+  .top-links a.active { color: var(--text); }
+
+  .eyebrow {
+    display: inline-block; font-size: 13.5px; font-weight: 600; color: var(--text);
+    background: var(--panel); padding: 7px 15px; border-radius: 999px; margin-bottom: 20px;
+  }
+  h1 { font-size: clamp(30px, 4.5vw, 44px); line-height: 1.12; margin: 0 0 16px; letter-spacing: -0.02em; }
+  h2 { font-size: 24px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .lede { font-size: 18px; color: var(--text-muted); max-width: 620px; margin: 0 0 8px; }
+  .section-sub { color: var(--text-muted); margin: 0 0 28px; max-width: 620px; font-size: 15px; }
+
+  .hero { padding: 56px 0 20px; }
+  section { padding: 40px 0; }
+
+  .headline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+  @media (max-width: 640px) { .headline-grid { grid-template-columns: 1fr; } }
+  .headline-card { background: var(--panel); border-radius: 22px; padding: 26px 24px; }
+  .headline-card .metric-name { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
+  .ba { display: flex; align-items: baseline; gap: 12px; }
+  .ba .before { font-size: 26px; font-weight: 700; color: var(--text-muted); text-decoration: line-through; text-decoration-thickness: 2px; }
+  .ba .arrow { font-size: 18px; color: var(--text-muted); }
+  .ba .after { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; }
+  .headline-card .delta-note { font-size: 13px; color: var(--text-muted); margin-top: 10px; }
+
+  .panel { background: var(--panel); border-radius: 28px; padding: 34px 30px; }
+  @media (max-width: 640px) { .panel { padding: 24px 20px; border-radius: 22px; } }
+
+  table.deltas { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  table.deltas th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; padding: 0 12px 12px; }
+  table.deltas th.num, table.deltas td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.deltas td { padding: 12px; border-top: 1px solid var(--border); }
+  table.deltas tr:first-child td { border-top: none; }
+  .delta-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .delta-up { background: var(--up-soft); color: var(--up); }
+  .delta-down { background: var(--down-soft); color: var(--down); }
+  .delta-flat { color: var(--text-muted); }
+
+  .config-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; }
+  .config-tag { background: var(--bg-alt); border-radius: 14px; padding: 12px 16px; font-size: 13px; flex: 1; min-width: 220px; }
+  .config-tag .ct-name { font-weight: 700; margin-bottom: 3px; }
+  .config-tag .ct-desc { color: var(--text-muted); }
+
+  .gate-row { display: flex; align-items: center; gap: 14px; background: var(--bg-alt); border-radius: 16px; padding: 16px 18px; margin-top: 12px; }
+  .gate-badge { font-size: 12px; font-weight: 800; letter-spacing: 0.03em; padding: 6px 12px; border-radius: 999px; text-transform: uppercase; white-space: nowrap; }
+  .gate-fail { background: var(--down-soft); color: var(--down); }
+  .gate-pass { background: var(--up-soft); color: var(--up); }
+  .gate-text { font-size: 14px; color: var(--text-muted); }
+  .gate-text strong { color: var(--text); }
+
+  .how-rows { display: flex; flex-direction: column; gap: 10px; }
+  .how-row { background: var(--panel); border-radius: 18px; padding: 18px 20px; }
+  .how-row h3 { font-size: 15px; margin: 0 0 4px; }
+  .how-row p { font-size: 14px; color: var(--text-muted); margin: 0; }
+
+  .loading { color: var(--text-muted); font-size: 15px; padding: 30px 0; }
+  footer { padding: 40px 0 60px; color: var(--text-muted); font-size: 13px; border-top: 1px solid var(--border); }
+  footer a { color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">Cloudbox<span> · Support Deflection Agent</span></div>
+    <div class="top-links">
+      <a href="index.html">Overview</a>
+      <a href="eval.html" class="active">Eval harness</a>
+      <a href="https://github.com/aleksa0ku/support-ticket-rag-agent" target="_blank" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <span class="eyebrow">Eval harness · regression testing</span>
+    <h1>Did that change make the agent better or worse?</h1>
+    <p class="lede">
+      Shipping an LLM feature without measuring it is guessing. This is the reusable
+      eval + regression-testing harness behind the agent: an LLM-as-judge grading answer
+      quality, a golden dataset, A/B of prompts and models, and a pass/fail gate that
+      catches regressions before they ship.
+    </p>
+  </section>
+</div>
+
+<div class="wrap">
+  <section>
+    <span class="eyebrow">Before / after</span>
+    <h2>One prompt change, measured</h2>
+    <p class="section-sub">
+      Same pipeline, same 100-question golden set. Only the system prompt changed —
+      from a naive "answer everything helpfully" baseline to the tuned prompt with an
+      explicit escalation policy and prompt-injection guardrails. The harness scores the difference.
+    </p>
+    <div class="headline-grid" id="headline"></div>
+  </section>
+</div>
+
+<div class="wrap">
+  <section>
+    <span class="eyebrow">Full comparison</span>
+    <div class="panel">
+      <div class="config-row" id="config-row"></div>
+      <div id="delta-table"><div class="loading">Loading eval results…</div></div>
+    </div>
+  </section>
+</div>
+
+<div class="wrap">
+  <section>
+    <span class="eyebrow">Regression gate</span>
+    <h2>The gate that blocks a bad deploy</h2>
+    <p class="section-sub">
+      Point the gate at a baseline and a candidate run. If any tracked metric drops past
+      tolerance, it exits non-zero — wire it into a manually-triggered CI job before promoting
+      a prompt or model change. Here it is run in reverse (tuned → naive) to show it catching the regression.
+    </p>
+    <div id="gate-box"></div>
+  </section>
+</div>
+
+<div class="wrap">
+  <section>
+    <span class="eyebrow">How the harness works</span>
+    <div class="how-rows">
+      <div class="how-row"><h3>Golden dataset</h3><p>100 labeled questions — 75 answerable from the docs, 25 that should escalate (security, billing, legal, prompt injection). Labels give deterministic routing metrics; the questions drive everything.</p></div>
+      <div class="how-row"><h3>LLM-as-judge (reference-free)</h3><p>A judge model grades each answer against the retrieved context on faithfulness, helpfulness, and safety — catching hallucinations and over-answering that the labels alone can't see. No hand-written gold answers to maintain.</p></div>
+      <div class="how-row"><h3>Experiment tracking + A/B</h3><p>Each run is a named, fingerprinted config (model + prompt + threshold) saved to disk. Compare any two runs for per-metric deltas and the exact list of tickets that flipped.</p></div>
+      <div class="how-row"><h3>Regression gate</h3><p>Baseline vs candidate, fail on any metric drop past tolerance. Run on-demand or from a manually-triggered CI job — real API calls, so not on every commit.</p></div>
+    </div>
+  </section>
+</div>
+
+<div class="wrap">
+  <footer>
+    Numbers on this page are generated by <code>scripts/run_ab_demo.py</code> and read live from
+    <code>eval-data.json</code> in this repo. Full harness source is on
+    <a href="https://github.com/aleksa0ku/support-ticket-rag-agent" target="_blank" rel="noopener">GitHub</a>.
+  </footer>
+</div>
+
+<script>
+const LABELS = {
+  escalation_accuracy: "Escalation-decision accuracy",
+  deflection_rate: "Deflection rate",
+  precision: "Precision (auto-resolved)",
+  recall: "Recall (resolvable)",
+  citation_accuracy: "Citation accuracy",
+  avg_quality_score: "Judge quality score",
+  quality_pass_rate: "Judge pass rate",
+  blended_cost_usd: "Blended cost / ticket",
+};
+// Metrics shown as the two big before/after cards.
+const HEADLINE = ["escalation_accuracy", "avg_quality_score"];
+
+function fmt(key, v) {
+  if (v === null || v === undefined) return "—";
+  if (key === "blended_cost_usd") return "$" + v.toFixed(2);
+  if (key === "avg_quality_score") return v.toFixed(2);
+  return (v * 100).toFixed(1) + "%";
+}
+
+function render(data) {
+  // Headline before/after cards
+  const byKey = Object.fromEntries(data.deltas.map(d => [d.metric, d]));
+  document.getElementById("headline").innerHTML = HEADLINE.map(key => {
+    const d = byKey[key];
+    if (!d) return "";
+    const improved = (d.delta > 0) === d.higher_is_better;
+    const deltaMag = key === "avg_quality_score" ? Math.abs(d.delta).toFixed(2)
+      : (Math.abs(d.delta) * 100).toFixed(1) + " pts";
+    return `
+      <div class="headline-card">
+        <div class="metric-name">${LABELS[key]}</div>
+        <div class="ba">
+          <span class="before">${fmt(key, d.baseline)}</span>
+          <span class="arrow">→</span>
+          <span class="after">${fmt(key, d.candidate)}</span>
+        </div>
+        <div class="delta-note">${improved ? "▲" : "▼"} ${deltaMag} from the tuned prompt</div>
+      </div>`;
+  }).join("");
+
+  // Config tags
+  document.getElementById("config-row").innerHTML = `
+    <div class="config-tag"><div class="ct-name">Baseline · ${data.baseline.name}</div><div class="ct-desc">${data.baseline.description}</div></div>
+    <div class="config-tag"><div class="ct-name">Candidate · ${data.candidate.name}</div><div class="ct-desc">${data.candidate.description}</div></div>`;
+
+  // Delta table
+  const rows = data.deltas.map(d => {
+    const improved = (d.delta > 0) === d.higher_is_better;
+    const flat = Math.abs(d.delta) < 1e-9;
+    const cls = flat ? "delta-flat" : (improved ? "delta-up delta-pill" : "delta-down delta-pill");
+    let mag;
+    if (d.metric === "blended_cost_usd") mag = "$" + Math.abs(d.delta).toFixed(2);
+    else if (d.metric === "avg_quality_score") mag = Math.abs(d.delta).toFixed(2);
+    else mag = (Math.abs(d.delta) * 100).toFixed(1) + " pts";
+    const sym = flat ? "—" : (improved ? "▲" : "▼");
+    return `<tr>
+      <td>${LABELS[d.metric] || d.metric}</td>
+      <td class="num">${fmt(d.metric, d.baseline)}</td>
+      <td class="num">${fmt(d.metric, d.candidate)}</td>
+      <td class="num"><span class="${cls}">${sym} ${mag}</span></td>
+    </tr>`;
+  }).join("");
+  document.getElementById("delta-table").innerHTML = `
+    <table class="deltas">
+      <thead><tr><th>Metric</th><th class="num">${data.baseline.name}</th><th class="num">${data.candidate.name}</th><th class="num">Change</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+  // Gate box
+  const caught = data.gate_catches_regression;
+  const vlist = (data.gate_violations || []).map(v => {
+    const key = v.metric;
+    const dir = v.higher_is_better ? "dropped" : "rose";
+    return `${LABELS[key] || key} ${dir} ${fmt(key, Math.abs(v.delta))}`;
+  }).join(", ");
+  document.getElementById("gate-box").innerHTML = `
+    <div class="gate-row">
+      <span class="gate-badge ${caught ? "gate-fail" : "gate-pass"}">${caught ? "Gate FAILED" : "Gate passed"}</span>
+      <span class="gate-text">${caught
+        ? `Blocked the deploy — <strong>${(data.gate_violations||[]).length} metric(s) regressed</strong>${vlist ? " (" + vlist + ")" : ""}.`
+        : "No regression detected."}</span>
+    </div>`;
+}
+
+fetch("eval-data.json")
+  .then(r => r.json())
+  .then(render)
+  .catch(() => {
+    document.getElementById("delta-table").innerHTML =
+      '<div class="loading">Eval data not available yet — run <code>python scripts/run_ab_demo.py</code>.</div>';
+  });
+</script>
+
+</body>
+</html>

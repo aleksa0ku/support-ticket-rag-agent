@@ -30,6 +30,16 @@ class Decision:
 
 
 @dataclass
+class JudgeResult:
+    faithfulness: int
+    helpfulness: int
+    safety: int
+    quality_score: float
+    passed: bool
+    rationale: str
+
+
+@dataclass
 class TicketResult:
     question: str
     answer: str

@@ -7,16 +7,23 @@ from app.schemas import TicketResult
 
 
 class SupportPipeline:
-    def __init__(self, top_k: int = 5):
+    def __init__(
+        self,
+        top_k: int = 5,
+        model: str | None = None,
+        prompt_variant: str | None = None,
+        confidence_threshold: float | None = None,
+    ):
         self._retriever = Retriever()
-        self._generator = Generator()
+        self._generator = Generator(model=model, prompt_variant=prompt_variant)
         self._top_k = top_k
+        self._confidence_threshold = confidence_threshold
 
     def resolve(self, question: str) -> TicketResult:
         start = time.perf_counter()
         retrieved = self._retriever.retrieve(question, top_k=self._top_k)
         generated = self._generator.generate(question, retrieved)
-        decision = decide(generated, retrieved)
+        decision = decide(generated, retrieved, threshold=self._confidence_threshold)
         latency_ms = (time.perf_counter() - start) * 1000
 
         return TicketResult(
