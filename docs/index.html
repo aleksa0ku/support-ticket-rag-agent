@@ -336,7 +336,7 @@
     <div class="eval-band">
       <div class="eb-left">
         <div class="eb-eyebrow">Eval harness</div>
-        <h3>A change made the KPI look better — and shipped worse answers.</h3>
+        <h3>We loosened the agent to auto-resolve more tickets. Did it actually help?</h3>
         <div class="eb-stat" id="eb-stat"></div>
         <div class="eb-gate" id="eb-gate"></div>
       </div>
@@ -436,7 +436,7 @@ fetch("eval-data.json")
       `<span class="eb-after" style="color:var(--escalate-text);">precision ${pct(prec.baseline)} → ${pct(prec.candidate)}</span>`;
     if (data.gate_catches_regression) {
       document.getElementById("eb-gate").textContent =
-        "The regression gate flagged it and blocked the deploy.";
+        "Deflection climbed — but it also auto-resolved a prompt-injection attack. The gate blocked the deploy.";
     }
     document.getElementById("eval-band-wrap").style.display = "";
   })
