@@ -1,7 +1,7 @@
 {
   "baseline": {
-    "name": "Before",
-    "description": "Production \u2014 escalation rules in the prompt, confidence threshold 0.72.",
+    "name": "Production",
+    "description": "The agent running live today \u2014 escalation rules in the prompt, confidence threshold 0.72.",
     "metrics": {
       "n": 100,
       "deflection_rate": 0.68,
@@ -27,8 +27,8 @@
     }
   },
   "candidate": {
-    "name": "After",
-    "description": "The change \u2014 escalation rules removed, confidence threshold lowered to 0.30.",
+    "name": "Proposed change",
+    "description": "Escalation rules removed from the prompt, and the confidence threshold lowered to 0.30.",
     "metrics": {
       "n": 100,
       "deflection_rate": 0.73,

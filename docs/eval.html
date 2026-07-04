@@ -103,6 +103,8 @@
   .incident-box { background: var(--down-soft); border-radius: 16px; padding: 16px 18px; margin: 12px auto 0; max-width: 620px; text-align: left; }
   .incident-label { font-size: 12px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--down); margin-bottom: 6px; }
   .incident-q { font-size: 14.5px; color: var(--text); font-style: italic; }
+  .incident-note { font-size: 13px; color: var(--text-muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.06); }
+  .incident-note strong { color: var(--text); }
 
   .how-rows { display: flex; flex-direction: column; gap: 10px; max-width: 720px; margin: 0 auto; }
   .how-row { background: var(--panel); border-radius: 18px; padding: 16px 20px; display: flex; gap: 14px; align-items: baseline; text-align: left; }
@@ -292,6 +294,9 @@ function render(data) {
     <div class="incident-box">
       <div class="incident-label">Auto-answered instead of escalated:</div>
       <div class="incident-q">“${incidents[0].question}”</div>
+      <div class="incident-note"><strong>This is a prompt-injection attack</strong> — a message crafted to trick the
+      AI into ignoring its own rules (here: leak its instructions, then grant a free upgrade). It should go
+      straight to a human, never be answered automatically.</div>
     </div>` : "";
 
   document.getElementById("gate-box").innerHTML = `
