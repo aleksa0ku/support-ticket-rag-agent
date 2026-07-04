@@ -1,11 +1,18 @@
 #!/usr/bin/env python
-"""End-to-end A/B demo: naive baseline (v1) vs tuned production prompt (v2).
+"""A/B regression demo: production config vs a proposed change.
 
-Runs both configs through the eval harness (with LLM-as-judge), compares
-them, runs the regression gate, writes a markdown report, and emits a
-compact JSON the demo site reads.
+Runs a known-good baseline and a candidate config through the eval harness
+(with LLM-as-judge), compares them, runs the regression gate, writes a
+markdown report, and emits the compact JSON the demo site reads.
 
-Usage: python scripts/run_ab_demo.py [--limit N]
+The default pairing tells the "harness catches a bad change before deploy"
+story: baseline = v2 (tuned production config); candidate = aggressive (a
+loosened config that chases a higher deflection rate and ships risky answers).
+
+Usage:
+  python scripts/run_ab_demo.py                          # v2 vs aggressive, both fresh
+  python scripts/run_ab_demo.py --baseline-file <path>   # reuse a cached baseline run
+  python scripts/run_ab_demo.py --baseline v2 --candidate v1
 """
 import argparse
 import json
@@ -24,64 +31,74 @@ ROOT = Path(__file__).resolve().parent.parent
 RESULTS_DIR = ROOT / "eval_results"
 SITE_DATA = ROOT / "docs" / "eval-data.json"
 
+# Human-facing descriptions per preset for the site data.
+DESCRIPTIONS = {
+    "v2": "Tuned prompt with an explicit escalation policy + injection guardrails, calibrated confidence threshold.",
+    "v1": "No escalation guidance and no injection guardrails.",
+    "aggressive": "Escalation guidance dropped and the confidence threshold loosened to chase a higher deflection rate.",
+}
 
-def _metric_map(cmp: dict) -> list[dict]:
-    return [
-        {
-            "metric": d["metric"],
-            "baseline": d["baseline"],
-            "candidate": d["candidate"],
-            "delta": d["delta"],
-            "higher_is_better": d["higher_is_better"],
-        }
-        for d in cmp["metric_deltas"]
-    ]
+
+def _load_or_run(preset_name: str, file: str | None, limit: int | None) -> dict:
+    if file:
+        path = Path(file)
+        if not path.exists():
+            path = RESULTS_DIR / file
+        run = json.loads(path.read_text())
+        print(f">>> Reusing cached run: {run['run_id']}")
+        return run
+    print(f">>> Running {preset_name}...")
+    return run_experiment(get_preset(preset_name), limit=limit)
 
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--baseline", default="v2", help="Baseline preset (known-good)")
+    parser.add_argument("--candidate", default="aggressive", help="Candidate preset (the change)")
+    parser.add_argument("--baseline-file", default=None, help="Reuse a cached baseline result file")
+    parser.add_argument("--candidate-file", default=None, help="Reuse a cached candidate result file")
     parser.add_argument("--limit", type=int, default=None)
     args = parser.parse_args()
 
-    print(">>> Running BASELINE (v1, naive prompt)...")
-    baseline = run_experiment(get_preset("v1"), limit=args.limit)
-    print("\n>>> Running CANDIDATE (v2, tuned prompt)...")
-    candidate = run_experiment(get_preset("v2"), limit=args.limit)
+    baseline = _load_or_run(args.baseline, args.baseline_file, args.limit)
+    candidate = _load_or_run(args.candidate, args.candidate_file, args.limit)
 
     cmp = compare(baseline, candidate)
     report = render_markdown(cmp)
     (RESULTS_DIR / "comparison.md").write_text(report)
     print("\n" + report)
 
-    # Direction check: here v2 is the improvement, so run the gate the other
-    # way (v2 baseline vs v1 candidate) to demonstrate it CATCHING a regression.
-    passed_fwd, _ = check_gate(baseline, candidate)
-    passed_rev, violations = check_gate(candidate, baseline)
-    print(f"Gate (v1→v2, the real change): {'PASS' if passed_fwd else 'FAIL'}")
-    print(f"Gate (v2→v1, simulating a regression): "
-          f"{'PASS' if passed_rev else 'FAIL'} — {len(violations)} violation(s)")
+    # Gate the candidate against the baseline: does the proposed change regress?
+    passed, violations = check_gate(baseline, candidate)
+    print(f"Gate ({baseline['config']['name']} → {candidate['config']['name']}): "
+          f"{'PASS' if passed else 'FAIL'} — {len(violations)} violation(s)")
 
+    b_name, c_name = baseline["config"]["name"], candidate["config"]["name"]
     site = {
         "baseline": {
-            "name": "v1 — naive prompt",
-            "description": "No escalation policy, no prompt-injection guardrails.",
+            "name": f"{b_name} — production",
+            "description": DESCRIPTIONS.get(b_name, ""),
             "metrics": baseline["metrics"],
         },
         "candidate": {
-            "name": "v2 — tuned prompt",
-            "description": "Explicit escalation policy + injection protection.",
+            "name": f"{c_name} — proposed change",
+            "description": DESCRIPTIONS.get(c_name, ""),
             "metrics": candidate["metrics"],
         },
-        "deltas": _metric_map(cmp),
+        "deltas": [
+            {"metric": d["metric"], "baseline": d["baseline"], "candidate": d["candidate"],
+             "delta": d["delta"], "higher_is_better": d["higher_is_better"]}
+            for d in cmp["metric_deltas"]
+        ],
         "regression_count": len(cmp["regressions"]),
         "improvement_count": len(cmp["improvements"]),
-        "improvements_sample": cmp["improvements"][:6],
-        "gate_catches_regression": not passed_rev,
+        "gate_passed": passed,
+        "gate_catches_regression": not passed,
         "gate_violations": violations,
+        "safety_incidents": [v for v in violations if v.get("type") == "safety"],
     }
     SITE_DATA.write_text(json.dumps(site, indent=2))
     print(f"\nSite data written to {SITE_DATA}")
-    print(f"Markdown report written to {RESULTS_DIR / 'comparison.md'}")
 
 
 if __name__ == "__main__":

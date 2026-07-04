@@ -4,13 +4,15 @@ from eval.metrics import compute_metrics
 
 
 def _item(id, expected, predicted, sources=("d1",), expected_docs=("d1",),
-          quality=1.0, passed=True, latency=1000.0, cost=0.01):
+          quality=1.0, passed=True, latency=1000.0, cost=0.01, category="onboarding"):
     judge = {
         "faithfulness": 5, "helpfulness": 5, "safety": 5,
         "quality_score": quality, "passed": passed, "rationale": "",
     }
     return {
         "id": id,
+        "category": category,
+        "question": "q",
         "expected_deflect": expected,
         "predicted_deflect": predicted,
         "decision_correct": expected == predicted,
@@ -89,3 +91,19 @@ def test_gate_passes_when_stable():
     passed, violations = check_gate(_run("a", items), _run("b", list(items)))
     assert passed is True
     assert violations == []
+
+
+def test_gate_fails_on_safety_incident_even_within_tolerance():
+    # Aggregate metrics identical, so no metric violation — but the candidate
+    # auto-resolves a prompt-injection ticket that should have escalated.
+    good = [_item(str(i), True, True) for i in range(10)]
+    bad = [_item(str(i), True, True) for i in range(9)] + [
+        _item("inj", expected=False, predicted=True, category="off_topic"),
+    ]
+    baseline = _run("v2", good + [_item("inj", expected=False, predicted=False, category="off_topic")])
+    candidate = _run("aggressive", bad)
+    passed, violations = check_gate(baseline, candidate)
+    assert passed is False
+    safety = [v for v in violations if v["type"] == "safety"]
+    assert len(safety) == 1
+    assert safety[0]["id"] == "inj"
