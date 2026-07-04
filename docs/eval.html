@@ -60,17 +60,17 @@
   }
   h1 { font-size: clamp(30px, 4.5vw, 44px); line-height: 1.12; margin: 0 0 16px; letter-spacing: -0.02em; }
   h2 { font-size: 24px; margin: 0 0 8px; letter-spacing: -0.01em; }
-  .lede { font-size: 18px; color: var(--text-muted); max-width: 620px; margin: 0 0 8px; }
-  .section-sub { color: var(--text-muted); margin: 0 0 28px; max-width: 620px; font-size: 15px; }
+  .lede { font-size: 18px; color: var(--text-muted); max-width: 600px; margin: 0 auto 8px; }
+  .section-sub { color: var(--text-muted); margin: 0 auto 28px; max-width: 560px; font-size: 15px; }
 
   .hero { padding: 56px 0 20px; }
-  section { padding: 40px 0; }
+  section { padding: 40px 0; text-align: center; }
 
   .headline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
   @media (max-width: 640px) { .headline-grid { grid-template-columns: 1fr; } }
   .headline-card { background: var(--panel); border-radius: 22px; padding: 26px 24px; }
   .headline-card .metric-name { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
-  .ba { display: flex; align-items: baseline; gap: 12px; }
+  .ba { display: flex; align-items: baseline; gap: 12px; justify-content: center; }
   .ba .before { font-size: 26px; font-weight: 700; color: var(--text-muted); text-decoration: line-through; text-decoration-thickness: 2px; }
   .ba .arrow { font-size: 18px; color: var(--text-muted); }
   .ba .after { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; }
@@ -89,25 +89,25 @@
   .delta-down { background: var(--down-soft); color: var(--down); }
   .delta-flat { color: var(--text-muted); }
 
-  .config-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; }
+  .config-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; text-align: left; }
   .config-tag { background: var(--bg-alt); border-radius: 14px; padding: 12px 16px; font-size: 13px; flex: 1; min-width: 220px; }
   .config-tag .ct-name { font-weight: 700; margin-bottom: 3px; }
   .config-tag .ct-desc { color: var(--text-muted); }
 
-  .gate-row { display: flex; align-items: center; gap: 14px; background: var(--bg-alt); border-radius: 16px; padding: 16px 18px; margin-top: 12px; }
+  .gate-row { display: inline-flex; align-items: center; gap: 14px; background: var(--bg-alt); border-radius: 16px; padding: 16px 18px; margin-top: 12px; text-align: left; max-width: 620px; }
   .gate-badge { font-size: 12px; font-weight: 800; letter-spacing: 0.03em; padding: 6px 12px; border-radius: 999px; text-transform: uppercase; white-space: nowrap; }
   .gate-fail { background: var(--down-soft); color: var(--down); }
   .gate-pass { background: var(--up-soft); color: var(--up); }
   .gate-text { font-size: 14px; color: var(--text-muted); }
   .gate-text strong { color: var(--text); }
-  .incident-box { background: var(--down-soft); border-radius: 16px; padding: 16px 18px; margin-top: 12px; }
+  .incident-box { background: var(--down-soft); border-radius: 16px; padding: 16px 18px; margin: 12px auto 0; max-width: 620px; text-align: left; }
   .incident-label { font-size: 12px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--down); margin-bottom: 6px; }
   .incident-q { font-size: 14.5px; color: var(--text); font-style: italic; }
 
-  .how-rows { display: flex; flex-direction: column; gap: 10px; }
-  .how-row { background: var(--panel); border-radius: 18px; padding: 18px 20px; }
-  .how-row h3 { font-size: 15px; margin: 0 0 4px; }
-  .how-row p { font-size: 14px; color: var(--text-muted); margin: 0; }
+  .how-rows { display: flex; flex-direction: column; gap: 10px; max-width: 720px; margin: 0 auto; }
+  .how-row { background: var(--panel); border-radius: 18px; padding: 16px 20px; display: flex; gap: 14px; align-items: baseline; text-align: left; }
+  .how-row h3 { font-size: 14.5px; margin: 0; flex-shrink: 0; width: 150px; }
+  .how-row p { font-size: 13.5px; color: var(--text-muted); margin: 0; }
 
   .loading { color: var(--text-muted); font-size: 15px; padding: 30px 0; }
   footer { padding: 40px 0 60px; color: var(--text-muted); font-size: 13px; border-top: 1px solid var(--border); }
@@ -132,26 +132,35 @@
     <span class="eyebrow">Eval harness · regression testing</span>
     <h1>Know whether an agent change helped — before you ship it.</h1>
     <p class="lede">
-      Shipping a change to an LLM agent without measuring it is guessing. This is the
-      reusable eval + regression-testing harness behind the support-ticket deflection
-      agent: an LLM-as-judge grading answer quality, a 100-question golden set, A/B of
-      prompts and configs, and a pass/fail gate that blocks regressions before they reach
-      customers. Below is one real example — a change that looked like a win.
+      The reusable eval + regression harness behind this support agent: an LLM-as-judge,
+      a 100-question test set, and a gate that blocks bad changes. One real example below.
     </p>
   </section>
 </div>
 
 <div class="wrap">
   <section>
-    <span class="eyebrow">A change that looked like a win</span>
-    <h2>The KPI went up. The answers got worse.</h2>
+    <span class="eyebrow">The change we tested</span>
+    <h2>Auto-resolve more tickets, escalate fewer.</h2>
     <p class="section-sub">
-      Same pipeline, same 100-question golden set. A well-meaning change — drop the strict
-      escalation guidance and loosen the confidence threshold — auto-resolves <em>more</em> tickets,
-      so the deflection-rate KPI climbs. But it also ships answers it shouldn't. The harness makes
-      the hidden cost visible.
+      Two knobs, to close more tickets without a human: <strong>confidence threshold
+      0.72&nbsp;→&nbsp;0.30</strong> and the escalation rules removed from the prompt.
+      Same agent, same test set. Did it help?
     </p>
     <div class="headline-grid" id="headline"></div>
+  </section>
+</div>
+
+<div class="wrap">
+  <section>
+    <span class="eyebrow">The verdict</span>
+    <h2>It shipped a prompt-injection answer. Blocked.</h2>
+    <p class="section-sub">
+      Deflection went up — but the agent auto-answered a malicious message it should have
+      sent to a human. Aggregate metrics stayed within tolerance; a zero-tolerance safety
+      rule caught it and failed the deploy.
+    </p>
+    <div id="gate-box"></div>
   </section>
 </div>
 
@@ -167,25 +176,12 @@
 
 <div class="wrap">
   <section>
-    <span class="eyebrow">Regression gate</span>
-    <h2>The gate that blocks a bad deploy</h2>
-    <p class="section-sub">
-      Point the gate at the production baseline and the proposed change. If any tracked metric
-      drops past tolerance, it exits non-zero — so a manually-triggered CI job blocks the deploy
-      before the change ever reaches customers.
-    </p>
-    <div id="gate-box"></div>
-  </section>
-</div>
-
-<div class="wrap">
-  <section>
     <span class="eyebrow">How the harness works</span>
     <div class="how-rows">
-      <div class="how-row"><h3>Golden dataset</h3><p>100 labeled questions — 75 answerable from the docs, 25 that should escalate (security, billing, legal, prompt injection). Labels give deterministic routing metrics; the questions drive everything.</p></div>
-      <div class="how-row"><h3>LLM-as-judge (reference-free)</h3><p>A judge model grades each answer against the retrieved context on faithfulness, helpfulness, and safety — catching hallucinations and over-answering that the labels alone can't see. No hand-written gold answers to maintain.</p></div>
-      <div class="how-row"><h3>Experiment tracking + A/B</h3><p>Each run is a named, fingerprinted config (model + prompt + threshold) saved to disk. Compare any two runs for per-metric deltas and the exact list of tickets that flipped.</p></div>
-      <div class="how-row"><h3>Regression gate</h3><p>Baseline vs candidate, fail on any metric drop past tolerance. Run on-demand or from a manually-triggered CI job — real API calls, so not on every commit.</p></div>
+      <div class="how-row"><h3>Golden dataset</h3><p>100 labeled questions — 75 answerable, 25 that should escalate (security, billing, legal, injection).</p></div>
+      <div class="how-row"><h3>LLM-as-judge</h3><p>Grades each answer against its sources for faithfulness, helpfulness, and safety — no gold answers to maintain.</p></div>
+      <div class="how-row"><h3>A/B compare</h3><p>Diff any two runs: per-metric deltas plus the exact tickets whose decision flipped.</p></div>
+      <div class="how-row"><h3>Regression gate</h3><p>Metric tolerances plus a zero-tolerance safety rule. Blocks a bad change before it ships.</p></div>
     </div>
   </section>
 </div>
@@ -248,8 +244,8 @@ function render(data) {
 
   // Config tags
   document.getElementById("config-row").innerHTML = `
-    <div class="config-tag"><div class="ct-name">Baseline · ${data.baseline.name}</div><div class="ct-desc">${data.baseline.description}</div></div>
-    <div class="config-tag"><div class="ct-name">Candidate · ${data.candidate.name}</div><div class="ct-desc">${data.candidate.description}</div></div>`;
+    <div class="config-tag"><div class="ct-name">${data.baseline.name}</div><div class="ct-desc">${data.baseline.description}</div></div>
+    <div class="config-tag"><div class="ct-name">${data.candidate.name}</div><div class="ct-desc">${data.candidate.description}</div></div>`;
 
   // Delta table
   const rows = data.deltas.map(d => {
@@ -285,19 +281,16 @@ function render(data) {
 
   let detail;
   if (!caught) {
-    detail = "No regression detected.";
+    detail = "No regression detected — safe to ship.";
   } else if (incidents.length) {
-    const inc = incidents[0];
-    detail = `Blocked the deploy. Aggregate precision stayed within tolerance — but the ` +
-      `change <strong>auto-resolved a ticket that should have escalated to a human</strong>, ` +
-      `and the safety rule has zero tolerance for that in sensitive categories.`;
+    detail = "<strong>Blocked the deploy.</strong> A safety-critical ticket was auto-resolved.";
   } else {
-    detail = `Blocked the deploy — ${metricViols.length} metric(s) regressed${mlist ? " (" + mlist + ")" : ""}.`;
+    detail = `<strong>Blocked the deploy</strong> — ${metricViols.length} metric(s) regressed${mlist ? " (" + mlist + ")" : ""}.`;
   }
 
   const incidentHtml = incidents.length ? `
     <div class="incident-box">
-      <div class="incident-label">Auto-resolved instead of escalated — ${incidents[0].category.replace("_", " ")}:</div>
+      <div class="incident-label">Auto-answered instead of escalated:</div>
       <div class="incident-q">“${incidents[0].question}”</div>
     </div>` : "";
 

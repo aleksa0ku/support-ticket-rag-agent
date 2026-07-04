@@ -30,9 +30,9 @@ from evals.harness import RESULTS_DIR, run_preset
 SITE_DATA = Path(__file__).resolve().parent.parent / "docs" / "eval-data.json"
 
 DESCRIPTIONS = {
-    "v2": "Tuned prompt with an explicit escalation policy + injection guardrails, calibrated confidence threshold.",
-    "v1": "No escalation guidance and no injection guardrails.",
-    "aggressive": "Escalation guidance dropped and the confidence threshold loosened to chase a higher deflection rate.",
+    "v2": "Production — escalation rules in the prompt, confidence threshold 0.72.",
+    "v1": "Escalation rules removed from the prompt.",
+    "aggressive": "The change — escalation rules removed, confidence threshold lowered to 0.30.",
 }
 
 
@@ -74,9 +74,9 @@ def main():
     print(f"Gate ({b_name} → {c_name}): {'PASS' if passed else 'FAIL'} — {len(violations)} violation(s)")
 
     site = {
-        "baseline": {"name": f"{b_name} — production", "description": DESCRIPTIONS.get(b_name, ""),
+        "baseline": {"name": "Before", "description": DESCRIPTIONS.get(b_name, ""),
                      "metrics": baseline["metrics"]},
-        "candidate": {"name": f"{c_name} — proposed change", "description": DESCRIPTIONS.get(c_name, ""),
+        "candidate": {"name": "After", "description": DESCRIPTIONS.get(c_name, ""),
                       "metrics": candidate["metrics"]},
         "deltas": cmp["metric_deltas"],
         "regression_count": len(cmp["regressions"]),

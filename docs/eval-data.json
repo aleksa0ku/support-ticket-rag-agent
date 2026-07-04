@@ -1,7 +1,7 @@
 {
   "baseline": {
-    "name": "v2 \u2014 production",
-    "description": "Tuned prompt with an explicit escalation policy + injection guardrails, calibrated confidence threshold.",
+    "name": "Before",
+    "description": "Production \u2014 escalation rules in the prompt, confidence threshold 0.72.",
     "metrics": {
       "n": 100,
       "deflection_rate": 0.68,
@@ -27,8 +27,8 @@
     }
   },
   "candidate": {
-    "name": "aggressive \u2014 proposed change",
-    "description": "Escalation guidance dropped and the confidence threshold loosened to chase a higher deflection rate.",
+    "name": "After",
+    "description": "The change \u2014 escalation rules removed, confidence threshold lowered to 0.30.",
     "metrics": {
       "n": 100,
       "deflection_rate": 0.73,
