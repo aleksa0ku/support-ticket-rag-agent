@@ -227,10 +227,10 @@
     </div>
 
     <div class="stat-strip" id="stat-strip">
-      <div class="stat"><div class="n">67%</div><div class="l">Deflection rate</div></div>
-      <div class="stat"><div class="n">90%</div><div class="l">Escalation-decision accuracy</div></div>
-      <div class="stat"><div class="n">100%</div><div class="l">Citation accuracy</div></div>
-      <div class="stat"><div class="n">$2.66</div><div class="l">Cost per ticket (blended)</div></div>
+      <div class="stat"><div class="n">67%</div><div class="l">Tickets closed with no human</div></div>
+      <div class="stat"><div class="n">90%</div><div class="l">Correct deflect-or-escalate calls</div></div>
+      <div class="stat"><div class="n">100%</div><div class="l">Answers correctly sourced</div></div>
+      <div class="stat"><div class="n">$5.34</div><div class="l">Saved per ticket</div></div>
     </div>
   </section>
 </div>
@@ -276,33 +276,38 @@
     <div class="metric-grid">
       <div class="metric-card">
         <div class="big">67%</div>
-        <div class="label">Deflection rate</div>
-        <div class="sub">67 of 100 tickets fully auto-resolved</div>
+        <div class="label">Tickets closed with zero human involvement</div>
+        <div class="sub">67 of 100 test tickets — the agent handled start to finish, no handoff</div>
+      </div>
+      <div class="metric-card">
+        <div class="big">$5.34</div>
+        <div class="label">Saved per ticket, on average</div>
+        <div class="sub">$8.00 assumed cost if a human handled every ticket, minus the agent's real
+          per-ticket cost (its own API cost, plus the flat $8 on the ~33% it still escalates) —
+          works out to $2.66/ticket, a 67% cut</div>
       </div>
       <div class="metric-card">
         <div class="big">98.5%</div>
-        <div class="label">Precision on auto-resolved</div>
-        <div class="sub">Of tickets it answered, % that should have been (66 correct / 1 wrong)</div>
+        <div class="label">Accuracy of what it auto-resolved</div>
+        <div class="sub">Of the 67 tickets it chose to answer itself, 66 were correct — only 1 wrong
+          answer reached a customer unsupervised</div>
       </div>
       <div class="metric-card">
         <div class="big">88%</div>
-        <div class="label">Recall on resolvable tickets</div>
-        <div class="sub">Of tickets it could safely answer, % it caught</div>
+        <div class="label">Share of the safe-to-answer tickets it caught</div>
+        <div class="sub">Of tickets it could have safely auto-resolved, it caught 88% — the rest went
+          to a human unnecessarily, which is safe but a missed efficiency gain</div>
       </div>
       <div class="metric-card">
         <div class="big">100%</div>
-        <div class="label">Citation accuracy</div>
-        <div class="sub">Correct source doc cited on all 66 correct auto-resolutions</div>
+        <div class="label">Answers backed by the right source</div>
+        <div class="sub">Every one of the 66 correct auto-resolutions cited the actual right
+          help-center article — not a guess, not a hallucinated source</div>
       </div>
       <div class="metric-card">
         <div class="big">6.7s</div>
-        <div class="label">Avg. first response</div>
-        <div class="sub">vs. an assumed 4h human first-response time</div>
-      </div>
-      <div class="metric-card">
-        <div class="big">$2.66</div>
-        <div class="label">Blended cost / ticket</div>
-        <div class="sub">vs. an assumed $8 flat human-handled cost — a 67% reduction</div>
+        <div class="label">Time to first response</div>
+        <div class="sub">vs. an assumed 4-hour human first-response time</div>
       </div>
     </div>
   </section>

@@ -26,7 +26,7 @@ using `claude-opus-4-8` for generation — see [Results](#results) below):
 | Recall on resolvable tickets | **88%** |
 | Citation accuracy | **100%** (66/66 correct auto-resolutions cited the right doc) |
 | Avg. first response | **6.7s** (vs. an assumed 4h human first-response time) |
-| Blended cost per ticket | **$2.66** (vs. an assumed $8 flat human-handled cost — a 67% reduction) |
+| Blended cost per ticket | **$2.66** — **$5.34 saved per ticket** vs. an assumed $8 flat human-handled cost (67% reduction) |
 
 This repo ships with a self-contained fictional product ("Cloudbox", a
 cloud file-storage/sync SaaS) so the whole pipeline runs end-to-end with no
