@@ -84,6 +84,17 @@
   h1 { font-size: clamp(32px, 5vw, 48px); line-height: 1.12; margin: 0 0 18px; letter-spacing: -0.02em; }
   .lede { font-size: 19px; color: var(--text-muted); max-width: 620px; margin: 0 0 28px; }
   .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .problem-chips { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 22px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 9px; background: var(--bg-alt);
+    border: 1px solid var(--border); border-radius: 999px; padding: 6px 16px 6px 6px;
+    box-shadow: var(--card-shadow);
+  }
+  .chip .chip-num {
+    background: var(--escalate-soft); color: var(--escalate-text); font-weight: 800;
+    font-size: 14.5px; letter-spacing: -0.01em; padding: 5px 11px; border-radius: 999px;
+  }
+  .chip .chip-label { font-size: 13.5px; color: var(--text-muted); font-weight: 500; }
   .btn {
     display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 8px;
     font-size: 14.5px; font-weight: 600; text-decoration: none; border: 1px solid transparent;
@@ -201,11 +212,14 @@
   <section class="hero" style="border-top:none; padding-bottom:0;">
     <span class="eyebrow">Portfolio project · RAG agent</span>
     <h1>Support tickets, answered before a human ever sees them.</h1>
+    <div class="problem-chips">
+      <div class="chip"><span class="chip-num">~40%</span><span class="chip-label">of tickets are repeat questions</span></div>
+      <div class="chip"><span class="chip-num">$5–15</span><span class="chip-label">in agent time, per ticket</span></div>
+    </div>
     <p class="lede">
-      Support teams answer the same ~40% of questions over and over, at $5–15 in agent
-      time per ticket. This agent retrieves from the help center and past tickets, drafts
-      an answer with Claude, and only auto-resolves when it's actually confident —
-      otherwise it escalates to a human with the draft attached.
+      This agent retrieves from the help center and past tickets, drafts an answer with
+      Claude, and only auto-resolves when it's actually confident — otherwise it escalates
+      to a human with the draft attached.
     </p>
     <div class="cta-row">
       <a class="btn btn-primary" href="#demo">See it answer real tickets</a>
