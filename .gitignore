@@ -10,6 +10,7 @@ chroma_db/
 dist/
 build/
 .DS_Store
+.claude/
 .ruff_cache/
 eval_results/
 *.log

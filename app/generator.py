@@ -60,6 +60,16 @@ ANSWER_TOOL = {
 }
 
 
+def _sanitize_answer(answer: str) -> str:
+    # Guards against rare cases where the model bleeds tool-call-formatting
+    # artifacts (e.g. "</answer>", "<parameter ...>") into the answer string itself.
+    for marker in ("</answer>", "<parameter"):
+        index = answer.find(marker)
+        if index != -1:
+            answer = answer[:index].rstrip()
+    return answer
+
+
 class Generator:
     def __init__(self):
         self._client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
@@ -86,7 +96,7 @@ class Generator:
         data = tool_use.input
 
         return GeneratedAnswer(
-            answer=data["answer"],
+            answer=_sanitize_answer(data["answer"]),
             confidence=float(data["confidence"]),
             cited_doc_ids=list(data.get("cited_doc_ids", [])),
             should_escalate=bool(data["should_escalate"]),
